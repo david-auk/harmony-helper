@@ -1,6 +1,10 @@
 import mysql.connector as database
 import secret
 
+#
+# chatid, priority 90 == not set
+#
+
 # Defining DB configuration
 mydb = database.connect(
 	host=secret.mariadb['connection']['host'],
@@ -20,7 +24,7 @@ def addData(table, values):
 	except database.Error as e:
 		print(f"Error adding entry from {mydb.database}[{table}]: {e}")
 
-def getData(table, inputstatement='ALL'):
+def getData(table, inputstatement='ALL', returnType='array'):
 	mydb.reconnect()
 	getDataCursor = mydb.cursor(buffered=True)
 	try:
@@ -31,10 +35,12 @@ def getData(table, inputstatement='ALL'):
 		getDataCursor.execute(statement)
 		rows = getDataCursor.fetchall()
 		if len(rows) == 1:
-			return tuple(rows[0])
+			if returnType == 'single':
+				return tuple(rows[0])
+			elif returnType == 'array':
+				return [tuple(row) for row in rows]
 		else:
 			return [tuple(row) for row in rows]
-		#return getDataCursor
 	except database.Error as e:
 		print(f"Error retrieving entry from {mydb.database}[{table}]: {e}")
 
