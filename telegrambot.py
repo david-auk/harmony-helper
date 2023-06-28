@@ -1,5 +1,6 @@
 import logging
 import time
+import os
 import secret
 import dbfunctions
 import telegramfunctions
@@ -101,17 +102,47 @@ def buttonResolver(update, context):
 
 def handleDocument(update, context):
 
-	if telegramfunctions.isUserAuthorised(update, context) is False:
-		message = context.bot.send_message(chat_id=update.message.chat_id, text="You are not authorized for this option.")
+	isBanned = telegramfunctions.beginTelegramFunction(update)
+	if isBanned:
+		update.message.reply_text('You are *BANNED*\nYou are not allowed to use this bot, Goodbye', parse_mode='MarkdownV2')
 		return
 
 	document: Document = update.message.document
 	# Process the document here
 	# You can access the file ID, file name, MIME type, file size, etc.
 	# using the properties of the `document` object
+	# Example: Reply to the user
+	update.message.reply_text(f"You sent a document: {document.file_name}, Please send me a music file.\nCheckout this awesome project for file conversion!\n\nffmpeg.org")
+
+def handleAudio(update, context):
+
+	isBanned = telegramfunctions.beginTelegramFunction(update)
+	if isBanned:
+		update.message.reply_text('You are *BANNED*\nYou are not allowed to use this bot, Goodbye', parse_mode='MarkdownV2')
+		return
+
+	file = update.message.audio
+	file_id = file.file_id
+	file_name = file.file_name
+
+	# Get the bot instance
+	bot = context.bot
+
+	# Download the file
+	file_path = bot.get_file(file_id).file_path
+
+	# Save the file on your server
+#	save_path = os.path.join('/tmp', file_name)
+	file_obj = bot.get_file(file_id)
+	file_path = file_obj.download(custom_path=f'/tmp/{file_id}.{file_name.split(".")[-1]}')
+	print(file_path)
 
 	# Example: Reply to the user
-	update.message.reply_text(f"You sent a document: {document.file_name}")
+	update.message.reply_text(f"File saved on the server.")
+
+	# Example: Reply to the user
+	update.message.reply_text(f"You sent an audio: {file.title} by {file.performer}")
+
 
 def userTextMessage(update, context):
 	"""Handle links sent by the user."""
@@ -212,6 +243,7 @@ def main():
 	dp.add_handler(CommandHandler("help", helpMenu))
 	dp.add_handler(CommandHandler("passwd", check_password))
 	dp.add_handler(CallbackQueryHandler(buttonResolver))
+	dp.add_handler(MessageHandler(Filters.audio, handleAudio))
 	dp.add_handler(MessageHandler(Filters.document, handleDocument))
 	dp.add_handler(MessageHandler(Filters.text & (~Filters.command), userTextMessage))
 	dp.add_handler(MessageHandler(Filters.text & Filters.command, error))
