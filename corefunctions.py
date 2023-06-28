@@ -79,7 +79,7 @@ def distanceCalc(instrumentalKey, vocalKey): # This only works (music theoreticl
     instrumentalKeyPos = keyPosition[instrumentalKey]
     vocalKeyPos = keyPosition[vocalKey]
 
-    if vocalKeyPos == instrumentalKeyPos: # UNDER CONSTRUCTION
+    if vocalKeyPos == instrumentalKeyPos:
         shortestSemitoneDistance = 0 # The Two are the exact same
     
 
