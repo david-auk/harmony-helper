@@ -60,7 +60,7 @@ def analyzeSongKey(audio_path):
     key_extractor = es.KeyExtractor()
     key, scale, confidence = key_extractor(audio)
 
-    return key, scale
+    return key, scale, confidence
 
 def circleOfFithResolver(key, keyType):
     if keyType == 'minor':

@@ -31,6 +31,8 @@ def delete_message_job(context: CallbackContext):
 def beginTelegramFunction(update):
 	chat_id = update.message.chat_id
 	
+	dbUserData = dbfunctions.getData('chatid', f'WHERE id = \"{chat_id}\"', returnType='single')
+
 	now = int(datetime.now().strftime("%Y%m%d%H%M%S"))
 	
 	dbfunctions.chData('chatid', chat_id, 'lastuse', now)
@@ -43,12 +45,13 @@ def beginTelegramFunction(update):
 	else:
 		name = user['first_name']
 
-	if dbfunctions.getData('chatid', f'WHERE id = \"{chat_id}\"', returnType='single')[0] != name:
+	if dbUserData[0] != name:
 		dbfunctions.chData('chatid', chat_id, 'name', name)
 
-	dbfunctions.chData('chatid', chat_id, 'lastuse', now)
-
-	authenticated = dbfunctions.getData('chatid', f'WHERE id = \"{update.message.chat_id}\"', returnType='single')[3]
+	authenticated = dbUserData[3]
 	if authenticated == 'BANNISHED':
-		return True
-	return False
+		return False, 'BAN'
+	elif authenticated == 'N/A':
+		return False, 'UNAUTHORISED'
+
+	return True, None
